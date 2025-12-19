@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  
   "scripts": {
-    "dev": "ts-node src/server.ts"
-  },
+  "dev": "ts-node src/server.ts",
+  "build": "tsc",
+  "start": "node dist/server.js"
+},
+
   "dependencies": {
     "@hapi/hapi": "^21.4.4",
     "@hapi/inert": "^7.1.0",

@@ -18,17 +18,19 @@ import { paymentRoutes } from "./api/chekout/router";
 const init = async () => {
   await connectDB();
 
+ 
   const server = Hapi.server({
-    port: Number(process.env.PORT) || 5000,
-    host: "localhost",
-    routes: {
-      cors: {
-        origin: ["http://localhost:5173"], // allow your React frontend
-        additionalHeaders: ["Accept", "Content-Type", "Authorization"],
-        credentials: true,
-      },
+  port: Number(process.env.PORT) || 5000,
+  host: "0.0.0.0", // ✅ REQUIRED for Render
+  routes: {
+    cors: {
+      origin: ["*"], // temporary (later restrict to Vercel domain)
+      additionalHeaders: ["Accept", "Content-Type", "Authorization"],
+      credentials: true,
     },
-  });
+  },
+});
+
 
   await server.register(Inert);
 
