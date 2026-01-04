@@ -3,17 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  
   "scripts": {
-  "dev": "ts-node src/server.ts",
-  "build": "tsc",
-  "start": "node dist/server.js"
-},
-
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
   "dependencies": {
     "@hapi/hapi": "^21.4.4",
-    "@hapi/inert": "^7.1.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
     "dotenv": "^17.2.3",
     "mongoose": "^9.0.0",
     "stripe": "^20.0.0",

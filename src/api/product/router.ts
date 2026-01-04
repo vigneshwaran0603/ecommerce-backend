@@ -1,15 +1,16 @@
 // product/router.ts
 
-import {ServerRoute} from "@hapi/hapi";
-import { createProduct, getAllProducts, getProductById, updateProduct } from "./handler";
+import { ServerRoute } from "@hapi/hapi";
+import {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+} from "./handler";
 
-
-const productRoutes:ServerRoute[]=[
-    
-        // method:"POST",
-        // path:"/product",
-        // handler: createProduct,
-        {
+const productRoutes: ServerRoute[] = [
+  // CREATE PRODUCT
+  {
     method: "POST",
     path: "/products",
     options: {
@@ -17,42 +18,42 @@ const productRoutes:ServerRoute[]=[
         output: "stream",
         parse: true,
         multipart: true,
-        maxBytes: 10 * 1024 * 1024,
+        maxBytes: 10 * 1024 * 1024, // 10MB
         allow: "multipart/form-data",
-      }
+      },
     },
     handler: createProduct,
   },
 
+  // GET ALL PRODUCTS
   {
-    method:"GET",
-    path:"/products",
+    method: "GET",
+    path: "/products",
     handler: getAllProducts,
   },
 
-  // get by single product
-
+  // GET SINGLE PRODUCT
   {
-    method:"GET",
-    path:"/product",
+    method: "GET",
+    path: "/product",
     handler: getProductById,
   },
 
-  // update a single product
+  // UPDATE PRODUCT
   {
-    method:"PUT",
-    path:"/product/{id}",
-     options: {
+    method: "PUT",
+    path: "/product/{id}",
+    options: {
       payload: {
         output: "stream",
         parse: true,
         multipart: true,
-        maxBytes: 20 * 1024 * 1024,
+        maxBytes: 20 * 1024 * 1024, // 20MB
         allow: "multipart/form-data",
-      }
+      },
     },
     handler: updateProduct,
-  }
-    
+  },
 ];
+
 export default productRoutes;
