@@ -8,29 +8,35 @@ import {
 } from "../../operations/product.operation";
 import cloudinary from "../../utils/cloudinary";
 
-/**
- * Helper: upload Hapi stream to Cloudinary safely
- */
+import { Readable } from "stream";  // <-- add this
+
+// -------------------- CLOUDINARY UPLOAD HELPER --------------------
 const uploadToCloudinary = async (file: any): Promise<string> => {
   if (!file || typeof file !== "object") {
     throw new Error("Invalid image file");
   }
 
+  // Convert Hapi file stream to buffer
   const chunks: Buffer[] = [];
   for await (const chunk of file) {
     chunks.push(chunk);
   }
-
   const buffer = Buffer.concat(chunks);
 
+  // Upload buffer to Cloudinary using a readable stream
+  const readable = new Readable();
+  readable.push(buffer);
+  readable.push(null);
+
   const result: any = await new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
+    const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "products" },
-      (error, res) => {
+      (error, result) => {
         if (error) reject(error);
-        else resolve(res);
+        else resolve(result);
       }
-    ).end(buffer);
+    );
+    readable.pipe(uploadStream);
   });
 
   if (!result?.secure_url) {
