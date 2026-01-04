@@ -16,13 +16,28 @@ const init = async () => {
 
   const server = Hapi.server({
     port: Number(process.env.PORT) || 5000,
-    host: "0.0.0.0", // required for Render
+    host: "0.0.0.0", // REQUIRED for Render
     routes: {
       cors: {
-        origin: ["*"], // later restrict to Vercel domain
-        additionalHeaders: ["Accept", "Content-Type", "Authorization"],
-        credentials: true,
+        origin: ["*"], // allow all (safe for testing)
+        headers: [
+          "Accept",
+          "Authorization",
+          "Content-Type",
+          "If-None-Match",
+        ],
+        exposedHeaders: ["Authorization"],
+        credentials: false, // IMPORTANT: must be false if origin is "*"
       },
+    },
+  });
+
+  // Health check (VERY IMPORTANT for Render)
+  server.route({
+    method: "GET",
+    path: "/",
+    handler: () => {
+      return { status: "Backend is running 🚀" };
     },
   });
 
