@@ -1,5 +1,4 @@
 // product/router.ts
-
 import { ServerRoute } from "@hapi/hapi";
 import {
   createProduct,
@@ -9,7 +8,6 @@ import {
 } from "./handler";
 
 const productRoutes: ServerRoute[] = [
-  // CREATE PRODUCT
   {
     method: "POST",
     path: "/products",
@@ -18,28 +16,26 @@ const productRoutes: ServerRoute[] = [
         output: "stream",
         parse: true,
         multipart: true,
-        maxBytes: 10 * 1024 * 1024, // 10MB
         allow: "multipart/form-data",
+        maxBytes: 10 * 1024 * 1024,
+        timeout: false, // ✅ IMPORTANT (prevents 500 on Render)
       },
     },
     handler: createProduct,
   },
 
-  // GET ALL PRODUCTS
   {
     method: "GET",
     path: "/products",
     handler: getAllProducts,
   },
 
-  // GET SINGLE PRODUCT
   {
     method: "GET",
     path: "/product",
     handler: getProductById,
   },
 
-  // UPDATE PRODUCT
   {
     method: "PUT",
     path: "/product/{id}",
@@ -48,8 +44,9 @@ const productRoutes: ServerRoute[] = [
         output: "stream",
         parse: true,
         multipart: true,
-        maxBytes: 20 * 1024 * 1024, // 20MB
         allow: "multipart/form-data",
+        maxBytes: 20 * 1024 * 1024,
+        timeout: false, // ✅ IMPORTANT
       },
     },
     handler: updateProduct,

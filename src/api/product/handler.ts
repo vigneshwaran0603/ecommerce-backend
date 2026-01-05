@@ -1,3 +1,5 @@
+
+
 import { Request, ResponseToolkit } from "@hapi/hapi";
 import { productSchema } from "../../shared/validation/product.validation";
 import {
@@ -8,35 +10,30 @@ import {
 } from "../../operations/product.operation";
 import cloudinary from "../../utils/cloudinary";
 
-import { Readable } from "stream";  // <-- add this
+// -------------------- STREAM → BUFFER (HAPI SAFE) --------------------
+const streamToBuffer = (stream: any): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
 
-// -------------------- CLOUDINARY UPLOAD HELPER --------------------
+// -------------------- CLOUDINARY UPLOAD --------------------
 const uploadToCloudinary = async (file: any): Promise<string> => {
-  if (!file || typeof file !== "object") {
-    throw new Error("Invalid image file");
+  if (!file || typeof file.on !== "function") {
+    throw new Error("Invalid image stream");
   }
 
-  // Convert Hapi file stream to buffer
-  const chunks: Buffer[] = [];
-  for await (const chunk of file) {
-    chunks.push(chunk);
-  }
-  const buffer = Buffer.concat(chunks);
-
-  // Upload buffer to Cloudinary using a readable stream
-  const readable = new Readable();
-  readable.push(buffer);
-  readable.push(null);
+  const buffer = await streamToBuffer(file);
 
   const result: any = await new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: "products" },
-      (error, result) => {
+    cloudinary.uploader
+      .upload_stream({ folder: "products" }, (error, result) => {
         if (error) reject(error);
         else resolve(result);
-      }
-    );
-    readable.pipe(uploadStream);
+      })
+      .end(buffer);
   });
 
   if (!result?.secure_url) {
@@ -51,7 +48,11 @@ export const createProduct = async (req: Request, h: ResponseToolkit) => {
   try {
     const payload: any = req.payload;
 
-    if (!payload || !payload.image) {
+    if (!payload) {
+      return h.response({ error: "Payload missing" }).code(400);
+    }
+
+    if (!payload.image) {
       return h.response({ error: "Product image is required" }).code(400);
     }
 
@@ -71,7 +72,7 @@ export const createProduct = async (req: Request, h: ResponseToolkit) => {
     return h.response({ message: "Product created", product }).code(201);
   } catch (err: any) {
     console.error("CREATE PRODUCT ERROR:", err);
-    return h.response({ error: err.message }).code(500);
+    return h.response({ error: err.message || "Internal Server Error" }).code(500);
   }
 };
 
@@ -107,13 +108,12 @@ export const updateProduct = async (req: Request, h: ResponseToolkit) => {
     const payload: any = req.payload;
 
     const updateData: any = {
-      name: payload.name,
-      price: payload.price,
-      category: payload.category,
-      description: payload.description,
+      name: payload?.name,
+      price: payload?.price,
+      category: payload?.category,
+      description: payload?.description,
     };
 
-    // image is optional during update
     if (payload?.image) {
       updateData.image = await uploadToCloudinary(payload.image);
     }
@@ -126,6 +126,6 @@ export const updateProduct = async (req: Request, h: ResponseToolkit) => {
     });
   } catch (err: any) {
     console.error("UPDATE PRODUCT ERROR:", err);
-    return h.response({ error: err.message }).code(500);
+    return h.response({ error: err.message || "Internal Server Error" }).code(500);
   }
 };
