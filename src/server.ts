@@ -19,7 +19,7 @@ const init = async () => {
     host: "0.0.0.0", // REQUIRED for Render
     routes: {
       cors: {
-        origin: ["*"], // allow all (safe for testing)
+        origin: ["https://ecommerce-frontend-dun-two.vercel.app"], // allow all (safe for testing)
         headers: [
           "Accept",
           "Authorization",
